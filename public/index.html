@@ -1,1 +1,835 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>PULSE — Social Media Tracker</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=Syne:wght@700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f5f4f1;
+    --surface: #ffffff;
+    --surface2: #f0efe9;
+    --border: #e5e3db;
+    --text: #1a1916;
+    --text2: #6b6860;
+    --accent: #ff4d6d;
+    --accent2: #7c3aed;
+    --green: #22c55e;
+    --teal: #0ea5e9;
+    --yellow: #f59e0b;
+    --radius: 14px;
+    --shadow: 0 2px 12px rgba(0,0,0,0.07);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    display: flex;
+    min-height: 100vh;
+  }
 
+  /* SIDEBAR */
+  .sidebar {
+    width: 200px;
+    min-height: 100vh;
+    background: var(--surface);
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    padding: 24px 0;
+    position: fixed;
+    top: 0; left: 0; bottom: 0;
+    z-index: 100;
+  }
+  .logo {
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: 22px;
+    padding: 0 20px 24px;
+    letter-spacing: -0.5px;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  .nav-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 20px;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text2);
+    cursor: pointer;
+    border-radius: 0;
+    transition: all 0.15s;
+    text-decoration: none;
+  }
+  .nav-item:hover, .nav-item.active {
+    color: var(--text);
+    background: var(--surface2);
+  }
+  .nav-item svg { width: 18px; height: 18px; flex-shrink: 0; }
+  .sidebar-bottom {
+    margin-top: auto;
+    padding: 16px 20px;
+    border-top: 1px solid var(--border);
+  }
+  .avatar {
+    width: 32px; height: 32px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    display: flex; align-items: center; justify-content: center;
+    color: white; font-size: 13px; font-weight: 700;
+  }
+
+  /* MAIN */
+  .main {
+    margin-left: 200px;
+    flex: 1;
+    padding: 28px 32px;
+    min-height: 100vh;
+  }
+
+  /* TOP BAR */
+  .topbar {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+  }
+  .platform-select {
+    display: flex;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+  }
+  .platform-btn {
+    padding: 9px 16px;
+    font-size: 13px;
+    font-weight: 500;
+    font-family: 'DM Sans', sans-serif;
+    cursor: pointer;
+    border: none;
+    background: transparent;
+    color: var(--text2);
+    transition: all 0.15s;
+  }
+  .platform-btn.active {
+    background: var(--text);
+    color: white;
+  }
+  .search-wrap {
+    flex: 1;
+    min-width: 220px;
+    position: relative;
+  }
+  .search-wrap svg {
+    position: absolute; left: 12px; top: 50%; transform: translateY(-50%);
+    width: 16px; height: 16px; color: var(--text2); pointer-events: none;
+  }
+  .search-input {
+    width: 100%;
+    padding: 9px 12px 9px 36px;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    background: var(--surface);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    color: var(--text);
+    outline: none;
+    transition: border 0.15s;
+  }
+  .search-input:focus { border-color: var(--accent2); }
+  .search-input::placeholder { color: var(--text2); }
+
+  .sort-select {
+    padding: 9px 14px;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    background: var(--surface);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text);
+    cursor: pointer;
+    outline: none;
+  }
+  .track-btn {
+    padding: 9px 18px;
+    background: var(--text);
+    color: white;
+    border: none;
+    border-radius: 10px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: opacity 0.15s;
+    white-space: nowrap;
+  }
+  .track-btn:hover { opacity: 0.85; }
+
+  /* TAGS */
+  .tags-row {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 20px;
+  }
+  .tag {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 12px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .tag:hover { border-color: var(--accent); }
+  .tag .remove { color: var(--text2); font-size: 15px; line-height: 1; }
+  .tag .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--accent); }
+
+  /* STATS BAR */
+  .stats-bar {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 24px;
+  }
+  .stat-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 16px 20px;
+    flex: 1;
+    min-width: 120px;
+  }
+  .stat-card .label { font-size: 12px; color: var(--text2); margin-bottom: 4px; }
+  .stat-card .value { font-size: 22px; font-weight: 700; font-family: 'Syne', sans-serif; }
+  .stat-card .change { font-size: 12px; color: var(--green); margin-top: 2px; }
+
+  /* GRID */
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));
+    gap: 16px;
+  }
+
+  /* POST CARD */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+    transition: box-shadow 0.2s, transform 0.2s;
+    cursor: pointer;
+    position: relative;
+  }
+  .card:hover {
+    box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+    transform: translateY(-2px);
+  }
+  .card-media {
+    width: 100%; height: 200px;
+    background: var(--surface2);
+    position: relative;
+    overflow: hidden;
+  }
+  .card-media img {
+    width: 100%; height: 100%; object-fit: cover;
+  }
+  .card-media-placeholder {
+    width: 100%; height: 100%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 40px;
+    background: linear-gradient(135deg, #f0efe9, #e5e3db);
+  }
+  .badge-type {
+    position: absolute; top: 10px; right: 10px;
+    background: rgba(0,0,0,0.6);
+    color: white; border-radius: 6px;
+    padding: 3px 7px; font-size: 11px; font-weight: 600;
+  }
+  .badge-save {
+    position: absolute; top: 10px; right: 10px;
+    background: rgba(255,255,255,0.9);
+    border: none; border-radius: 8px; cursor: pointer;
+    width: 32px; height: 32px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px;
+    transition: background 0.15s;
+  }
+  .badge-save:hover { background: white; }
+  .badge-save.saved { color: var(--accent); }
+
+  .card-body { padding: 12px 14px; }
+  .card-author {
+    display: flex; align-items: center; gap: 8px;
+    margin-bottom: 8px;
+  }
+  .author-avatar {
+    width: 28px; height: 28px; border-radius: 50%;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    display: flex; align-items: center; justify-content: center;
+    color: white; font-size: 10px; font-weight: 700; flex-shrink: 0;
+    overflow: hidden;
+  }
+  .author-avatar img { width: 100%; height: 100%; object-fit: cover; }
+  .author-info { flex: 1; min-width: 0; }
+  .author-handle {
+    font-size: 13px; font-weight: 600; color: var(--text);
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .author-meta { font-size: 11px; color: var(--text2); }
+
+  .platform-icon { font-size: 13px; }
+
+  .card-metrics {
+    display: flex; gap: 10px; align-items: center;
+    flex-wrap: wrap;
+  }
+  .metric {
+    display: flex; align-items: center; gap: 4px;
+    font-size: 12px; color: var(--text2);
+  }
+  .metric.highlight { color: var(--accent2); font-weight: 600; }
+  .metric.green { color: var(--green); font-weight: 600; }
+  .metric svg { width: 14px; height: 14px; }
+
+  /* LOADING */
+  .loading-overlay {
+    position: fixed; inset: 0; background: rgba(245,244,241,0.85);
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    z-index: 999; gap: 14px;
+    display: none;
+  }
+  .loading-overlay.show { display: flex; }
+  .spinner {
+    width: 40px; height: 40px;
+    border: 3px solid var(--border);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .loading-text { font-size: 14px; color: var(--text2); font-weight: 500; }
+
+  /* EMPTY STATE */
+  .empty-state {
+    grid-column: 1/-1;
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--text2);
+  }
+  .empty-state .big { font-size: 48px; margin-bottom: 12px; }
+  .empty-state h3 { font-size: 18px; font-weight: 600; color: var(--text); margin-bottom: 6px; }
+  .empty-state p { font-size: 14px; max-width: 300px; margin: 0 auto; }
+
+  /* MODAL */
+  .modal-bg {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.4);
+    z-index: 200; display: none; align-items: center; justify-content: center;
+  }
+  .modal-bg.show { display: flex; }
+  .modal {
+    background: white; border-radius: 16px;
+    padding: 28px; width: 420px; max-width: 90vw;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.15);
+  }
+  .modal h3 { font-size: 18px; font-weight: 700; margin-bottom: 6px; }
+  .modal p { font-size: 13px; color: var(--text2); margin-bottom: 18px; line-height: 1.5; }
+  .modal input {
+    width: 100%; padding: 10px 14px;
+    border: 1px solid var(--border); border-radius: 10px;
+    font-family: 'DM Sans', sans-serif; font-size: 14px;
+    margin-bottom: 12px; outline: none;
+  }
+  .modal input:focus { border-color: var(--accent2); }
+  .modal-btns { display: flex; gap: 10px; justify-content: flex-end; }
+  .btn-cancel {
+    padding: 9px 18px; background: var(--surface2);
+    border: 1px solid var(--border); border-radius: 10px;
+    font-family: 'DM Sans', sans-serif; font-size: 13px;
+    cursor: pointer;
+  }
+  .btn-save {
+    padding: 9px 18px; background: var(--text);
+    color: white; border: none; border-radius: 10px;
+    font-family: 'DM Sans', sans-serif; font-size: 13px;
+    font-weight: 600; cursor: pointer;
+  }
+  .api-note {
+    background: #fef3c7; border: 1px solid #fcd34d; border-radius: 10px;
+    padding: 12px 14px; font-size: 12px; color: #92400e;
+    margin-bottom: 14px; line-height: 1.5;
+  }
+  .api-note strong { display: block; margin-bottom: 3px; }
+
+  .error-banner {
+    background: #fef2f2; border: 1px solid #fecaca; border-radius: 10px;
+    padding: 12px 14px; font-size: 13px; color: #991b1b;
+    margin-bottom: 16px; display: none;
+  }
+  .error-banner.show { display: block; }
+
+  /* DEMO MODE BANNER */
+  .demo-banner {
+    background: linear-gradient(135deg, #7c3aed15, #ff4d6d15);
+    border: 1px solid #7c3aed30;
+    border-radius: 10px;
+    padding: 10px 16px;
+    font-size: 13px;
+    color: var(--accent2);
+    margin-bottom: 16px;
+    display: flex; align-items: center; gap: 8px;
+  }
+
+  @media (max-width: 700px) {
+    .sidebar { width: 60px; }
+    .sidebar .logo, .nav-item span { display: none; }
+    .main { margin-left: 60px; padding: 16px; }
+    .stats-bar { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="logo">PULSE</div>
+  <a class="nav-item active" onclick="showSection('tracked')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/></svg>
+    <span>Tracked</span>
+  </a>
+  <a class="nav-item" onclick="showSection('explore')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+    <span>Explore</span>
+  </a>
+  <a class="nav-item" onclick="showSection('saved')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
+    <span>Saved</span>
+  </a>
+  <div class="sidebar-bottom">
+    <div style="display:flex;align-items:center;gap:8px;cursor:pointer" onclick="openSettings()">
+      <div class="avatar">P</div>
+      <span style="font-size:13px;font-weight:500">Settings</span>
+    </div>
+  </div>
+</aside>
+
+<!-- LOADING -->
+<div class="loading-overlay" id="loading">
+  <div class="spinner"></div>
+  <div class="loading-text" id="loadingText">Fetching posts...</div>
+</div>
+
+<!-- SETTINGS MODAL -->
+<div class="modal-bg" id="settingsModal">
+  <div class="modal">
+    <h3>⚙️ API Settings</h3>
+    <p>Enter your Apify API key to pull real Instagram & TikTok data. Get one free at <strong>apify.com</strong>.</p>
+    <div class="api-note">
+      <strong>📋 How to get your key:</strong>
+      1. Sign up at apify.com (free)<br>
+      2. Go to Settings → Integrations<br>
+      3. Copy your Personal API token
+    </div>
+    <input type="password" id="apifyKeyInput" placeholder="apify_api_xxxxxxxxxxxxxxxxxxxx" />
+    <div class="modal-btns">
+      <button class="btn-cancel" onclick="closeSettings()">Cancel</button>
+      <button class="btn-save" onclick="saveApiKey()">Save Key</button>
+    </div>
+  </div>
+</div>
+
+<!-- MAIN -->
+<main class="main">
+
+  <div class="demo-banner" id="demoBanner">
+    ✨ <strong>Demo mode</strong> — showing sample data. Click <strong>Settings</strong> (bottom-left) to add your Apify key for real live data.
+  </div>
+
+  <div class="error-banner" id="errorBanner"></div>
+
+  <!-- TOP BAR -->
+  <div class="topbar">
+    <div class="platform-select">
+      <button class="platform-btn active" onclick="setPlatform('all', this)">All</button>
+      <button class="platform-btn" onclick="setPlatform('instagram', this)">Instagram</button>
+      <button class="platform-btn" onclick="setPlatform('tiktok', this)">TikTok</button>
+    </div>
+    <div class="search-wrap">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+      <input class="search-input" id="searchInput" type="text" placeholder="Enter @username to track (e.g. @drmaryclaire)" />
+    </div>
+    <select class="sort-select" id="sortSelect" onchange="sortPosts()">
+      <option value="views">Sort: Views</option>
+      <option value="engagement">Sort: Engagement</option>
+      <option value="likes">Sort: Likes</option>
+      <option value="comments">Sort: Comments</option>
+      <option value="date">Sort: Date</option>
+    </select>
+    <button class="track-btn" onclick="trackAccount()">+ Track Account</button>
+  </div>
+
+  <!-- TAGS -->
+  <div class="tags-row" id="tagsRow"></div>
+
+  <!-- STATS -->
+  <div class="stats-bar" id="statsBar"></div>
+
+  <!-- GRID -->
+  <div class="grid" id="postsGrid">
+    <div class="empty-state">
+      <div class="big">📡</div>
+      <h3>Start tracking accounts</h3>
+      <p>Enter a username above and click Track Account to see their top posts.</p>
+    </div>
+  </div>
+
+</main>
+
+<script>
+// ── STATE ──────────────────────────────────────────────
+let apiKey = localStorage.getItem('apify_key') || '';
+let trackedAccounts = JSON.parse(localStorage.getItem('tracked_accounts') || '[]');
+let allPosts = JSON.parse(localStorage.getItem('cached_posts') || '[]');
+let savedPosts = JSON.parse(localStorage.getItem('saved_posts') || '[]');
+let currentPlatform = 'all';
+let demoMode = !apiKey;
+
+// ── DEMO DATA ──────────────────────────────────────────
+const DEMO_POSTS = [
+  { id:'d1', platform:'instagram', username:'drmaryclaire', handle:'@drmaryclaire', avatar:'', type:'video', thumbnail:'', caption:"Don't miss Dr. Andrea Matsumura tomorrow on unPAUSED — the show redefining women's health conversations.", views:25000, likes:1840, comments:92, engagement:0.0001, date:'Today', saved:false },
+  { id:'d2', platform:'instagram', username:'drmaryclaire', handle:'@drmaryclaire', avatar:'', type:'reel', thumbnail:'', caption:'My tracks right now 🎵 What are you listening to?', views:84600, likes:6200, comments:310, engagement:0.0005, date:'Today', saved:false },
+  { id:'d3', platform:'instagram', username:'drmondona', handle:'@drmondona', avatar:'', type:'post', thumbnail:'', caption:'The Effect of Menopause Hormone Therapy on Insulin Resistance — a meta-analysis of 17 randomized controlled trials.', views:0, likes:2890, comments:37, engagement:0.0002, date:'Today', saved:false },
+  { id:'d4', platform:'instagram', username:'drstacysims', handle:'@drstacysims', avatar:'', type:'reel', thumbnail:'', caption:"And it's the one day... fuel your performance, not your fear.", views:46700, likes:3100, comments:144, engagement:0.001, date:'Today', saved:false },
+  { id:'d5', platform:'instagram', username:'katiecouric', handle:'@katiecouric', avatar:'', type:'post', thumbnail:'', caption:"Stop ignoring women's health. What Katie Couric has been saying for years — she's been sounding the alarm.", views:0, likes:5400, comments:281, engagement:0.0003, date:'Today', saved:false },
+  { id:'d6', platform:'tiktok', username:'drjordannemont', handle:'@drjordanemont', avatar:'', type:'video', thumbnail:'', caption:'Ways to actually honor women on International Women\'s Day ✅', views:120000, likes:8900, comments:430, engagement:0.0012, date:'Today', saved:false },
+  { id:'d7', platform:'tiktok', username:'thermodynamicsdoc', handle:'@thermodynamicsdoc', avatar:'', type:'video', thumbnail:'', caption:'The laws of thermodynamics are pretty well proven. RESPECTFULLY this user here is describing...', views:89000, likes:7100, comments:520, engagement:0.0015, date:'Today', saved:false },
+  { id:'d8', platform:'instagram', username:'drmaryclaire', handle:'@drmaryclaire', avatar:'', type:'post', thumbnail:'', caption:'Perimenopause research roundup this week — new findings on cortisol, sleep, and weight resistance.', views:31000, likes:2200, comments:178, engagement:0.0004, date:'Yesterday', saved:false },
+];
+
+// ── PLATFORM EMOJI ─────────────────────────────────────
+const PLATFORM_ICON = { instagram:'📸', tiktok:'🎵' };
+const TYPE_ICON = { video:'▶', reel:'🎬', post:'⬜' };
+const EMOJIS = ['🌸','💪','🧬','🔬','💊','🏃','🌿','✨','🎯','⚡'];
+
+// ── INIT ───────────────────────────────────────────────
+function init() {
+  if (trackedAccounts.length === 0 && allPosts.length === 0) {
+    allPosts = DEMO_POSTS.map(p => ({...p}));
+    trackedAccounts = ['@drmaryclaire','@drmondona','@drstacysims'];
+    demoMode = true;
+  } else {
+    demoMode = !apiKey;
+  }
+  document.getElementById('demoBanner').style.display = demoMode ? 'flex' : 'none';
+  renderTags();
+  renderStats();
+  renderPosts();
+}
+
+// ── PLATFORM ───────────────────────────────────────────
+function setPlatform(p, el) {
+  currentPlatform = p;
+  document.querySelectorAll('.platform-btn').forEach(b => b.classList.remove('active'));
+  el.classList.add('active');
+  renderPosts();
+}
+
+// ── TRACK ACCOUNT ──────────────────────────────────────
+async function trackAccount() {
+  const raw = document.getElementById('searchInput').value.trim();
+  if (!raw) return;
+  const handle = raw.startsWith('@') ? raw : '@' + raw;
+  const username = handle.replace('@','');
+
+  if (trackedAccounts.includes(handle)) {
+    showError('Already tracking ' + handle);
+    return;
+  }
+
+  if (!apiKey) {
+    // Demo mode: add fake posts
+    trackedAccounts.push(handle);
+    const fakePosts = generateDemoPosts(handle, username);
+    allPosts = [...allPosts, ...fakePosts];
+    saveState();
+    document.getElementById('searchInput').value = '';
+    renderTags(); renderStats(); renderPosts();
+    showError('Demo mode: showing sample data for ' + handle + '. Add your Apify key in Settings for real data.', '#7c3aed');
+    return;
+  }
+
+  showLoading('Fetching posts for ' + handle + '...');
+  hideError();
+  try {
+    const posts = await fetchInstagramPosts(username);
+    trackedAccounts.push(handle);
+    allPosts = [...allPosts, ...posts];
+    saveState();
+    document.getElementById('searchInput').value = '';
+    renderTags(); renderStats(); renderPosts();
+  } catch(e) {
+    showError('Error fetching data: ' + e.message + ' — Make sure your Apify key is set in Settings.');
+  } finally {
+    hideLoading();
+  }
+}
+
+function generateDemoPosts(handle, username) {
+  const count = 4 + Math.floor(Math.random() * 4);
+  const posts = [];
+  for (let i = 0; i < count; i++) {
+    const views = Math.floor(Math.random() * 200000);
+    const likes = Math.floor(views * (0.03 + Math.random() * 0.1));
+    const comments = Math.floor(likes * (0.02 + Math.random() * 0.08));
+    posts.push({
+      id: handle + '_' + i,
+      platform: Math.random() > 0.5 ? 'instagram' : 'tiktok',
+      username, handle,
+      avatar: '',
+      type: ['video','reel','post'][Math.floor(Math.random()*3)],
+      thumbnail: '',
+      caption: 'Sample post ' + (i+1) + ' from ' + handle + ' — ' + EMOJIS[Math.floor(Math.random()*EMOJIS.length)],
+      views, likes, comments,
+      engagement: (likes + comments) / Math.max(views, 1),
+      date: ['Today','Yesterday','2 days ago','3 days ago'][Math.floor(Math.random()*4)],
+      saved: false
+    });
+  }
+  return posts;
+}
+
+// ── APIFY FETCH (via /api/scrape backend) ────────────────
+async function fetchInstagramPosts(username) {
+  document.getElementById('loadingText').textContent = `Starting scraper for @${username}... (takes ~60s)`;
+  let res;
+  try {
+    res = await fetch('/api/scrape', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username, apiKey })
+    });
+  } catch(e) {
+    throw new Error('Network error — check your connection.');
+  }
+
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error || `Server error ${res.status}`);
+  if (!data.posts || data.posts.length === 0) throw new Error(`No posts found for @${username}. Account may be private.`);
+  return data.posts;
+}
+
+// ── RENDER POSTS ───────────────────────────────────────
+function renderPosts() {
+  const grid = document.getElementById('postsGrid');
+  let posts = [...allPosts];
+
+  // Filter platform
+  if (currentPlatform !== 'all') {
+    posts = posts.filter(p => p.platform === currentPlatform);
+  }
+
+  // Sort
+  const sort = document.getElementById('sortSelect').value;
+  posts.sort((a,b) => {
+    if (sort === 'views') return (b.views||0) - (a.views||0);
+    if (sort === 'engagement') return (b.engagement||0) - (a.engagement||0);
+    if (sort === 'likes') return (b.likes||0) - (a.likes||0);
+    if (sort === 'comments') return (b.comments||0) - (a.comments||0);
+    return 0;
+  });
+
+  if (posts.length === 0) {
+    grid.innerHTML = `<div class="empty-state">
+      <div class="big">📡</div>
+      <h3>No posts yet</h3>
+      <p>Track an account above to see their top-performing posts.</p>
+    </div>`;
+    return;
+  }
+
+  grid.innerHTML = posts.map(p => cardHTML(p)).join('');
+}
+
+function cardHTML(p) {
+  const isSaved = savedPosts.includes(p.id);
+  const media = p.thumbnail
+    ? `<img src="${p.thumbnail}" alt="post" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" /><div class="card-media-placeholder" style="display:none">${EMOJIS[Math.abs(hashStr(p.id)) % EMOJIS.length]}</div>`
+    : `<div class="card-media-placeholder">${EMOJIS[Math.abs(hashStr(p.id)) % EMOJIS.length]}</div>`;
+
+  const initials = p.handle.replace('@','').slice(0,2).toUpperCase();
+  const engPct = p.engagement > 0 ? (p.engagement * 100).toFixed(2) + '%' : '—';
+  const viewsFmt = p.views > 0 ? fmtNum(p.views) : null;
+
+  return `<div class="card">
+    <div class="card-media">
+      ${media}
+      <span class="badge-type">${TYPE_ICON[p.type] || '⬜'} ${p.type}</span>
+    </div>
+    <div class="card-body">
+      <div class="card-author">
+        <div class="author-avatar">${p.avatar ? `<img src="${p.avatar}" onerror="this.style.display='none'"/>` : ''}${initials}</div>
+        <div class="author-info">
+          <div class="author-handle">${PLATFORM_ICON[p.platform]||''} ${p.handle}</div>
+          <div class="author-meta">${p.platform} · ${p.date}</div>
+        </div>
+        <button class="badge-save ${isSaved?'saved':''}" onclick="toggleSave('${p.id}',this)" title="Save post">
+          ${isSaved ? '🔖' : '🏷️'}
+        </button>
+      </div>
+      <div class="card-metrics">
+        ${viewsFmt ? `<span class="metric"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>${viewsFmt}</span>` : ''}
+        <span class="metric highlight">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg>
+          ${engPct}
+        </span>
+        <span class="metric">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+          ${fmtNum(p.likes)}
+        </span>
+        <span class="metric">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+          ${fmtNum(p.comments)}
+        </span>
+      </div>
+    </div>
+  </div>`;
+}
+
+// ── TAGS ───────────────────────────────────────────────
+function renderTags() {
+  const row = document.getElementById('tagsRow');
+  row.innerHTML = trackedAccounts.map(h => `
+    <div class="tag">
+      <div class="dot"></div>
+      <span>${h}</span>
+      <span class="remove" onclick="removeAccount('${h}')">×</span>
+    </div>`).join('');
+}
+
+function removeAccount(handle) {
+  trackedAccounts = trackedAccounts.filter(h => h !== handle);
+  const username = handle.replace('@','');
+  allPosts = allPosts.filter(p => p.username !== username && p.handle !== handle);
+  saveState();
+  renderTags(); renderStats(); renderPosts();
+}
+
+// ── STATS ──────────────────────────────────────────────
+function renderStats() {
+  const bar = document.getElementById('statsBar');
+  if (allPosts.length === 0) { bar.innerHTML = ''; return; }
+  const totalViews = allPosts.reduce((s,p) => s + (p.views||0), 0);
+  const totalPosts = allPosts.length;
+  const avgEng = allPosts.reduce((s,p) => s + (p.engagement||0), 0) / totalPosts;
+  const topPost = [...allPosts].sort((a,b) => (b.views||0)-(a.views||0))[0];
+
+  bar.innerHTML = `
+    <div class="stat-card"><div class="label">Total Posts</div><div class="value">${totalPosts}</div><div class="change">↑ tracked</div></div>
+    <div class="stat-card"><div class="label">Total Views</div><div class="value">${fmtNum(totalViews)}</div><div class="change">across all tracked</div></div>
+    <div class="stat-card"><div class="label">Avg Engagement</div><div class="value">${(avgEng*100).toFixed(3)}%</div><div class="change">↑ engagement rate</div></div>
+    <div class="stat-card"><div class="label">Accounts</div><div class="value">${trackedAccounts.length}</div><div class="change">being tracked</div></div>
+  `;
+}
+
+// ── SAVE ───────────────────────────────────────────────
+function toggleSave(id, btn) {
+  if (savedPosts.includes(id)) {
+    savedPosts = savedPosts.filter(s => s !== id);
+    btn.innerHTML = '🏷️';
+    btn.classList.remove('saved');
+  } else {
+    savedPosts.push(id);
+    btn.innerHTML = '🔖';
+    btn.classList.add('saved');
+  }
+  localStorage.setItem('saved_posts', JSON.stringify(savedPosts));
+}
+
+function sortPosts() { renderPosts(); }
+
+// ── SETTINGS ───────────────────────────────────────────
+function openSettings() {
+  document.getElementById('apifyKeyInput').value = apiKey;
+  document.getElementById('settingsModal').classList.add('show');
+}
+function closeSettings() {
+  document.getElementById('settingsModal').classList.remove('show');
+}
+function saveApiKey() {
+  const val = document.getElementById('apifyKeyInput').value.trim();
+  apiKey = val;
+  localStorage.setItem('apify_key', val);
+  demoMode = !val;
+  document.getElementById('demoBanner').style.display = demoMode ? 'flex' : 'none';
+  closeSettings();
+}
+
+// ── SECTIONS ───────────────────────────────────────────
+function showSection(s) {
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  event.currentTarget.classList.add('active');
+  if (s === 'saved') {
+    // Show only saved
+    const saved = allPosts.filter(p => savedPosts.includes(p.id));
+    const grid = document.getElementById('postsGrid');
+    if (saved.length === 0) {
+      grid.innerHTML = `<div class="empty-state"><div class="big">🔖</div><h3>No saved posts</h3><p>Click the bookmark icon on any post to save it here.</p></div>`;
+    } else {
+      grid.innerHTML = saved.map(p => cardHTML(p)).join('');
+    }
+  } else {
+    renderPosts();
+  }
+}
+
+// ── UTILS ──────────────────────────────────────────────
+function fmtNum(n) {
+  if (!n) return '0';
+  if (n >= 1000000) return (n/1000000).toFixed(1) + 'M';
+  if (n >= 1000) return (n/1000).toFixed(1) + 'K';
+  return n.toString();
+}
+function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+function hashStr(s) { let h=0; for(let i=0;i<s.length;i++) h=(h*31+s.charCodeAt(i))|0; return h; }
+function showLoading(msg) {
+  document.getElementById('loadingText').textContent = msg||'Loading...';
+  document.getElementById('loading').classList.add('show');
+}
+function hideLoading() { document.getElementById('loading').classList.remove('show'); }
+function showError(msg, color) {
+  const b = document.getElementById('errorBanner');
+  b.textContent = msg;
+  b.style.color = color || '#991b1b';
+  b.style.background = color ? '#f5f3ff' : '#fef2f2';
+  b.style.borderColor = color ? '#c4b5fd' : '#fecaca';
+  b.classList.add('show');
+  setTimeout(() => b.classList.remove('show'), 6000);
+}
+function hideError() { document.getElementById('errorBanner').classList.remove('show'); }
+function saveState() {
+  localStorage.setItem('tracked_accounts', JSON.stringify(trackedAccounts));
+  localStorage.setItem('cached_posts', JSON.stringify(allPosts));
+}
+
+// Also allow Enter key in search
+document.getElementById('searchInput').addEventListener('keydown', e => {
+  if (e.key === 'Enter') trackAccount();
+});
+
+init();
+</script>
+</body>
+</html>
