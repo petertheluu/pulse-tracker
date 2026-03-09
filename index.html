@@ -611,54 +611,24 @@ function generateDemoPosts(handle, username) {
   return posts;
 }
 
-// ── APIFY FETCH ────────────────────────────────────────
+// ── APIFY FETCH (via /api/scrape backend) ────────────────
 async function fetchInstagramPosts(username) {
-  // Apify Instagram scraper actor
-  const actorId = 'apify~instagram-scraper';
-  const runUrl = `https://api.apify.com/v2/acts/${actorId}/runs?token=${apiKey}`;
-
-  const runRes = await fetch(runUrl, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      usernames: [username],
-      resultsLimit: 20,
-    })
-  });
-  if (!runRes.ok) throw new Error('Failed to start scraper (check API key)');
-  const runData = await runRes.json();
-  const runId = runData.data.id;
-
-  // Poll for completion
-  for (let i = 0; i < 30; i++) {
-    await sleep(3000);
-    const statusRes = await fetch(`https://api.apify.com/v2/actor-runs/${runId}?token=${apiKey}`);
-    const statusData = await statusRes.json();
-    if (statusData.data.status === 'SUCCEEDED') break;
-    if (statusData.data.status === 'FAILED') throw new Error('Scraper failed');
-    document.getElementById('loadingText').textContent = `Fetching... (${i*3}s)`;
+  document.getElementById('loadingText').textContent = `Starting scraper for @${username}... (takes ~60s)`;
+  let res;
+  try {
+    res = await fetch('/api/scrape', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username, apiKey })
+    });
+  } catch(e) {
+    throw new Error('Network error — check your connection.');
   }
 
-  const datasetId = runData.data.defaultDatasetId;
-  const itemsRes = await fetch(`https://api.apify.com/v2/datasets/${datasetId}/items?token=${apiKey}`);
-  const items = await itemsRes.json();
-
-  return items.map((item, idx) => ({
-    id: item.id || username + '_' + idx,
-    platform: 'instagram',
-    username,
-    handle: '@' + username,
-    avatar: item.ownerProfilePicUrl || '',
-    type: item.type || 'post',
-    thumbnail: item.displayUrl || item.videoUrl || '',
-    caption: item.caption || '',
-    views: item.videoViewCount || item.playCount || 0,
-    likes: item.likesCount || 0,
-    comments: item.commentsCount || 0,
-    engagement: item.likesCount ? (item.likesCount + (item.commentsCount||0)) / Math.max(item.videoViewCount||1, 1) : 0,
-    date: item.timestamp ? new Date(item.timestamp).toLocaleDateString() : 'Unknown',
-    saved: false
-  }));
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error || `Server error ${res.status}`);
+  if (!data.posts || data.posts.length === 0) throw new Error(`No posts found for @${username}. Account may be private.`);
+  return data.posts;
 }
 
 // ── RENDER POSTS ───────────────────────────────────────
